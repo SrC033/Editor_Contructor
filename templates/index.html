@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Constructor 3D · Professional</title>
+    <link rel="stylesheet" href="modulos/css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <!-- Panel izquierdo: Escena 3D -->
+        <div class="scene-panel" id="scenePanel">
+            <div id="canvas-principal"></div>
+            <button class="toggle-panel-btn" id="togglePanelBtn" onclick="toggleMovementPanel()" title="Ocultar/Mostrar controles">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M6 5L6 11M10 5L10 11M5 6L11 6M5 10L11 10" stroke="currentColor" stroke-width="1.2"/></svg>
+            </button>
+            <div class="movement-panel" id="movementPanel">
+                <div class="btn-group">
+                    <button onclick="resetearCamara()" class="btn-icon" title="Resetear cámara">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4L7 7L9 8" stroke="currentColor" stroke-width="1.2"/></svg>
+                    </button>
+                </div>
+                <div class="separator"></div>
+                <div class="btn-group">
+                    <button onclick="zoomIn()" class="btn-icon" title="Acercar">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12.5 12.5M4 6L8 6M6 4L6 8" stroke="currentColor" stroke-width="1.2"/></svg>
+                    </button>
+                    <button onclick="zoomOut()" class="btn-icon" title="Alejar">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12.5 12.5M4 6L8 6" stroke="currentColor" stroke-width="1.2"/></svg>
+                    </button>
+                </div>
+                <div class="separator"></div>
+                <div class="btn-group">
+                    <button onclick="rotateUp()" class="btn-icon" title="Arriba">↑</button>
+                    <button onclick="rotateDown()" class="btn-icon" title="Abajo">↓</button>
+                    <button onclick="rotateLeft()" class="btn-icon" title="Izquierda">←</button>
+                    <button onclick="rotateRight()" class="btn-icon" title="Derecha">→</button>
+                </div>
+                <div class="separator"></div>
+                <div class="btn-group">
+                    <button onclick="setViewMode('3d')" class="btn-view active" title="Vista 3D">3D</button>
+                    <button onclick="setViewMode('2d')" class="btn-view" title="Vista 2D">2D</button>
+                </div>
+                <div class="separator"></div>
+                <div class="btn-group">
+                    <button onclick="toggleFullscreen()" class="btn-icon" id="fullscreenBtn" title="Pantalla completa">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L5 2M2 2L2 5M2 2L6 6M12 2L9 2M12 2L12 5M12 2L8 6M2 12L5 12M2 12L2 9M2 12L6 8M12 12L9 12M12 12L12 9M12 12L8 8" stroke="currentColor" stroke-width="1.2"/></svg>
+                    </button>
+                </div>
+                <div class="separator"></div>
+                <div class="zoom-indicator">
+                    <span class="value" id="zoomValue">100%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel derecho: Configuración -->
+        <div class="config-panel" id="configPanel">
+            <div class="panel-header">
+                <div class="header-logo">
+                    <div class="logo-icon">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="3" y="3" width="22" height="22" rx="5" stroke="#667eea" stroke-width="1.5"/><path d="M9 14L12 17L19 10" stroke="#667eea" stroke-width="2" stroke-linecap="round"/><circle cx="19" cy="19" r="1.5" stroke="#667eea" stroke-width="1.5"/><circle cx="9" cy="9" r="1.5" stroke="#667eea" stroke-width="1.5"/></svg>
+                    </div>
+                    <div>
+                        <h2>Constructor 3D</h2>
+                        <p>Professional Edition</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-dot"></div>
+                <span class="status-text">Sistema activo</span>
+                <span class="status-version">v5.3.34</span>
+            </div>
+
+            <div class="camera-info-panel">
+                <div class="info-row">
+                    <span class="label">X</span>
+                    <span class="value coord" id="camX">0.00</span>
+                    <span class="label">Y</span>
+                    <span class="value coord" id="camY">0.00</span>
+                    <span class="label">Z</span>
+                    <span class="value coord" id="camZ">0.00</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Modo</span>
+                    <span class="value" id="camMode">3D</span>
+                    <span class="label">Zoom</span>
+                    <span class="value" id="camZoom">100%</span>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><span class="number" id="totalVectors">0</span><span class="label">Objetos</span></div>
+                <div class="stat-card"><span class="number" id="totalItems">0</span><span class="label">Items</span></div>
+                <div class="stat-card"><span class="number" id="totalObjects">0</span><span class="label">Mesh</span></div>
+            </div>
+
+            <div class="controls-section">
+                <div class="section-title">Rangos por eje</div>
+                <div class="range-controls">
+                    <div class="range-row"><span class="range-label">X</span><input type="range" id="rangoXInput" min="10" max="500" value="100" step="5" /><span class="range-value" id="rangoXValue">100</span></div>
+                    <div class="range-row"><span class="range-label">Y</span><input type="range" id="rangoYInput" min="10" max="500" value="100" step="5" /><span class="range-value" id="rangoYValue">100</span></div>
+                    <div class="range-row"><span class="range-label">Z</span><input type="range" id="rangoZInput" min="10" max="500" value="100" step="5" /><span class="range-value" id="rangoZValue">100</span></div>
+                    <button class="btn-secondary btn-full" onclick="resetearRangos()">Resetear Rangos</button>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="section-title">Acciones</div>
+                <div class="btn-grid">
+                    <button class="btn-action" id="btnNewObject" onclick="abrirModalObjeto()" title="Nuevo Objeto">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <span>Nuevo</span>
+                    </button>
+                    <button class="btn-action" onclick="addRandomObject()" title="Aleatorio">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="4" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="4" cy="12" r="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+                        <span>Aleatorio</span>
+                    </button>
+                    <button class="btn-action" onclick="clearObjects()" title="Limpiar Mesh">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 5H13M5 5V12C5 12.5523 5.44772 13 6 13H10C10.5523 13 11 12.5523 11 12V5M7 7V11M9 7V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 3H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <span>Limpiar</span>
+                    </button>
+                    <button class="btn-action btn-danger" onclick="clearAll()" title="Limpiar Todo">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4H14M5.5 4L6 13C6 13.5523 6.44772 14 7 14H9C9.55228 14 10 13.5523 10 13L10.5 4M8 6V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 2H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <span>Todo</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="vectors-list">
+                <div class="section-title"><span>Objetos</span><span id="vectorCount">0</span></div>
+                <div id="vectorList"><div class="empty-state"><span class="icon">📭</span><p>No hay objetos</p></div></div>
+            </div>
+
+            <div class="terminal-panel">
+                <div class="terminal-header">
+                    <span class="terminal-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></span>
+                    <span class="terminal-title">Terminal</span>
+                    <span class="terminal-status">●</span>
+                </div>
+                <div class="terminal-body" id="terminalOutput">
+                    <div class="terminal-line"><span class="prompt">▶</span><span class="text">Sistema inicializado...</span></div>
+                    <div class="terminal-line"><span class="prompt">▶</span><span class="text">Constructor 3D/2D v5.3.34</span></div>
+                    <div class="terminal-line"><span class="prompt">▶</span><span class="text">Escribe "help" para ver comandos</span></div>
+                </div>
+                <div class="terminal-input-container">
+                    <span class="terminal-prompt">$</span>
+                    <input type="text" id="terminalInput" placeholder="Escribe un comando..." autofocus />
+                    <button class="terminal-send-btn" onclick="ejecutarComandoTerminal()">↵</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CREAR OBJETO -->
+    <div class="modal" id="createObjectModal">
+        <div class="modal-content modal-drawing">
+            <div class="modal-header">
+                <h2>Nuevo objeto</h2>
+                <div class="modal-header-actions">
+                    <button class="btn-toggle-editor" id="btnToggleTerminalModal" onclick="toggleModoEditor()">
+                        <span class="icon">⌨</span>
+                        <span class="text">Editor</span>
+                    </button>
+                    <button class="modal-close" onclick="cerrarModalObjeto()">✕</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="drawing-layout">
+                    <div class="drawing-left-panel">
+                        <div class="drawing-canvas-container">
+                            <div id="canvas-secundario"></div>
+                            
+                            <!-- PANEL DE RANGOS -->
+                            <div class="drawing-ranges-panel" id="drawingRangesPanel">
+                                <div class="ranges-header">
+                                    <span class="ranges-title">Rangos por eje</span>
+                                    <button class="ranges-close" onclick="toggleRangesPanel()">✕</button>
+                                </div>
+                                <div class="ranges-body">
+                                    <div class="range-group">
+                                        <div class="range-item"><span class="axis-label x">X</span>
+                                            <div class="range-inputs"><input type="number" id="rangoXMinInput" value="-100" step="5" /><span>a</span><input type="number" id="rangoXMaxInput" value="100" step="5" /></div>
+                                            <input type="range" id="rangoXRange" min="-500" max="500" value="100" step="5" />
+                                            <span class="range-display" id="rangoXDisplay">±100</span>
+                                        </div>
+                                        <div class="range-item"><span class="axis-label y">Y</span>
+                                            <div class="range-inputs"><input type="number" id="rangoYMinInput" value="-100" step="5" /><span>a</span><input type="number" id="rangoYMaxInput" value="100" step="5" /></div>
+                                            <input type="range" id="rangoYRange" min="-500" max="500" value="100" step="5" />
+                                            <span class="range-display" id="rangoYDisplay">±100</span>
+                                        </div>
+                                        <div class="range-item"><span class="axis-label z">Z</span>
+                                            <div class="range-inputs"><input type="number" id="rangoZMinInput" value="-100" step="5" /><span>a</span><input type="number" id="rangoZMaxInput" value="100" step="5" /></div>
+                                            <input type="range" id="rangoZRange" min="-500" max="500" value="100" step="5" />
+                                            <span class="range-display" id="rangoZDisplay">±100</span>
+                                        </div>
+                                    </div>
+                                    <div class="ranges-actions"><button class="btn-primary-sm" onclick="aplicarRangosDesdePanel()">Aplicar</button><button class="btn-secondary-sm" onclick="resetearRangosDesdePanel()">Resetear</button></div>
+                                </div>
+                            </div>
+
+                            <!-- PALETA CON BOTÓN DE MATERIAL -->
+                            <div class="drawing-palette" id="drawingPalette">
+                                <div class="palette-row">
+                                    <button class="palette-btn active" onclick="setPointMode('create')" id="paletteCreatePoint">➕</button>
+                                    <button class="palette-btn" onclick="activarModoConexion()" id="paletteConnect">🔗</button>
+                                    <button class="palette-btn" onclick="activarModoMano()" id="paletteHand">✋</button>
+                                    <button class="palette-btn" onclick="activarModoOrbita()" id="paletteOrbit">🌐</button>
+                                    <button class="palette-btn" onclick="clearDrawingCanvas()">🗑</button>
+                                    <button class="palette-btn" onclick="undoLastPoint()">↩</button>
+                                    <button class="palette-btn" onclick="guardarObjeto()">💾</button>
+                                </div>
+                                <div class="palette-divider"></div>
+                                <div class="palette-row">
+                                    <button class="palette-btn" onclick="resetDrawingCamera()">⌂</button>
+                                    <button class="palette-btn" onclick="zoomDrawingOut()">−</button>
+                                    <button class="palette-btn" onclick="zoomDrawingIn()">+</button>
+                                    <button class="palette-btn" onclick="rotateDrawingUp()">↑</button>
+                                    <button class="palette-btn" onclick="rotateDrawingDown()">↓</button>
+                                    <button class="palette-btn" onclick="rotateDrawingLeft()">←</button>
+                                    <button class="palette-btn" onclick="rotateDrawingRight()">→</button>
+                                </div>
+                                <div class="palette-divider"></div>
+                                <div class="palette-row">
+                                    <button class="palette-btn" onclick="setDrawingView('3d')">3D</button>
+                                    <button class="palette-btn" onclick="setDrawingView('2d')">2D</button>
+                                    <button class="palette-btn" id="paletteRangesToggle" onclick="toggleRangesPanel()">📐</button>
+                                    <button class="palette-btn" id="paletteTallar" title="Modo Tallar (Quitar material)">🪚</button>
+                                    <button class="palette-btn" id="paletteMaterial" title="Modo Añadir Material">🧱</button>
+                                </div>
+                                <div class="palette-divider"></div>
+                                <div class="palette-row">
+                                    <button class="palette-btn active" id="viewSolidBtn" onclick="setViewSolid()">■</button>
+                                    <button class="palette-btn" id="viewWireframeBtn" onclick="setViewWireframe()">◇</button>
+                                    <button class="palette-btn" id="viewTransparentBtn" onclick="setViewTransparent()">◈</button>
+                                </div>
+                                <div class="palette-divider"></div>
+                                <div class="palette-row">
+                                    <span class="palette-label">Fondo</span>
+                                    <button class="palette-btn lighting-btn active" id="btnFondoClaro" onclick="setFondoModo('claro')">☀</button>
+                                    <button class="palette-btn lighting-btn" id="btnFondoOscuro" onclick="setFondoModo('oscuro')">☽</button>
+                                    <button class="palette-btn lighting-btn" id="btnFondoAuto" onclick="setFondoModo('auto')">↻</button>
+                                    <input type="range" id="fondoIntensidadInput" min="0" max="100" value="100" step="1" class="lighting-slider" />
+                                    <span class="lighting-value" id="fondoIntensidadValue">100%</span>
+                                    <input type="color" id="fondoColorPicker" value="#ffffff" class="lighting-color" />
+                                    <span class="color-preview" id="fondoColorPreview"></span>
+                                </div>
+                                <div class="palette-divider"></div>
+                                <div class="palette-row">
+                                    <span class="palette-label">Pintar</span>
+                                    <button class="palette-btn" id="paintBrushBtn" onclick="activarPincel()">🖌</button>
+                                    <button class="palette-btn" id="paintBucketBtn" onclick="activarCubeta()">🪣</button>
+                                    <input type="color" id="paintColorPicker" value="#4facfe" class="paint-color" />
+                                    <span class="color-preview" id="paintColorPreview"></span>
+                                </div>
+                                <div class="palette-divider"></div>
+                                <div class="palette-row">
+                                    <span class="palette-label">Textura</span>
+                                    <button class="palette-btn" onclick="document.getElementById('texturaFileInput').click()">📤</button>
+                                    <button class="palette-btn" onclick="limpiarTextura()">🗑</button>
+                                    <button class="palette-btn" id="toggleTextureBtn" onclick="toggleModoPintura()">⟳</button>
+                                    <input type="file" id="texturaFileInput" accept="image/*" style="display:none;" />
+                                    <img id="texturaPreview" class="texture-preview" style="display:none;" alt="Preview" />
+                                    <span class="texture-status" id="textureStatus">Color</span>
+                                </div>
+                            </div>
+
+                            <!-- CONTROLES TALLAR / MATERIAL -->
+                            <div class="tallar-controls">
+                                <div class="tallar-row"><label>Radio</label><input type="range" id="tallarRadio" min="1" max="20" value="5" step="0.5" /><span class="tallar-value" id="tallarRadioValue">5</span></div>
+                                <div class="tallar-row"><label>Inten.</label><input type="range" id="tallarIntensidad" min="0.1" max="1.0" value="0.5" step="0.1" /><span class="tallar-value" id="tallarIntensidadValue">0.5</span></div>
+                            </div>
+
+                            <div class="drawing-info">
+                                <span id="pointCount">0 puntos</span>
+                                <span id="lineCount">0 líneas</span>
+                                <span id="solidCount">0 sólidos</span>
+                                <span id="drawingStatus">Haz clic para agregar puntos</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel derecho -->
+                    <div class="drawing-right-panel" id="drawingRightPanel">
+                        <div class="drawing-controls-content" id="drawingControlsContent">
+                            <div class="control-group"><label>Nombre</label><input type="text" id="objectNameInput" placeholder="mi_objeto" value="mi_objeto"></div>
+                            
+                            <div class="figuras-bar">
+                                <div class="figuras-header"><span>Figuras</span><span class="hint">Click para agregar</span></div>
+                                <div class="figuras-buttons">
+                                    <button class="btn-figura esfera" onclick="agregarFigura('esfera')">●</button>
+                                    <button class="btn-figura cuadrado" onclick="agregarFigura('cuadrado')">■</button>
+                                    <button class="btn-figura cono" onclick="agregarFigura('cono')">▲</button>
+                                    <button class="btn-figura piramide" onclick="agregarFigura('piramide')">△</button>
+                                    <button class="btn-figura cilindro" onclick="agregarFigura('cilindro')">▬</button>
+                                </div>
+                                <div class="figuras-size"><label>Tamaño</label><input type="range" id="figuraSizeInput" min="5" max="80" value="30" step="5" /><span id="figuraSizeValue">30</span></div>
+                            </div>
+
+                            <div class="connect-bar">
+                                <div class="connect-header"><span>Conectar puntos</span><span class="hint">P1-P2-P3, P4-P5...</span></div>
+                                <div class="connect-input"><input type="text" id="connectInput" placeholder="P1-P2-P3, P4-P5..."><button class="btn-connect" onclick="conectarPuntos()">↗</button></div>
+                            </div>
+
+                            <div class="stats-mini">
+                                <span><span class="stat-label">PUNTOS</span><span class="stat-number" id="pointsListLabel">0</span></span>
+                                <span><span class="stat-label">LÍNEAS</span><span class="stat-number" id="linesCountLabel">0</span></span>
+                                <span><span class="stat-label">FIGURAS</span><span class="stat-number" id="figurasCountLabel">0</span></span>
+                            </div>
+
+                            <div class="coord-bar">
+                                <div class="coord-header"><span>Coordenadas</span><span class="hint">X, Y, Z</span></div>
+                                <div class="coord-input"><input type="text" id="coordInput" placeholder="13, 56, 78"><button class="btn-coord" onclick="createPointByCoordinates()">+</button></div>
+                            </div>
+
+                            <div class="list-container"><div id="pointsList" class="list-items"><div class="empty-list">Sin puntos</div></div></div>
+                            <div class="list-container"><div id="linesList" class="list-items"><div class="empty-list">Sin líneas</div></div></div>
+                        </div>
+                        <div class="drawing-editor-content" id="drawingEditorContent" style="display: none;">
+                            <div class="editor-header">
+                                <span class="editor-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></span>
+                                <span class="editor-title">Editor</span>
+                                <button class="editor-help" id="btnHelpManual" onclick="abrirAyuda()">?</button>
+                                <button class="editor-run" onclick="ejecutarEditor()">▶</button>
+                            </div>
+                            <div class="editor-body"><textarea id="drawingEditorInput" spellcheck="false">mi_objeto : {
+    // Puntos: p_1 : {(10,20,30), color_azul}
+    // Figuras: esfera : {color_rojo, 20}
+}</textarea></div>
+                            <div class="editor-status"><span class="status-dot"></span><span class="status-text">Listo</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Módulos -->
+    <script src="modulos/js/main.js"></script>
+    <script src="modulos/js/modulos/comandos.js"></script>
+    <script src="modulos/js/modulos/manual.js"></script>
+
+    <!-- Inicialización -->
+    <script>
+        (function() {
+            'use strict';
+            function inicializarSistema() {
+                console.log('🔄 Inicializando sistema...');
+                if (typeof ComandosModule !== 'undefined') console.log('✅ ComandosModule cargado');
+                else { setTimeout(inicializarSistema, 500); return; }
+                if (typeof abrirAyuda === 'undefined') { setTimeout(inicializarSistema, 500); return; }
+                if (typeof actualizarUI === 'undefined' || typeof sincronizarEditor === 'undefined') { setTimeout(inicializarSistema, 500); return; }
+                try {
+                    if (typeof actualizarEditor === 'function') actualizarEditor();
+                    if (typeof sincronizarEditor === 'function') sincronizarEditor();
+                    if (typeof actualizarUI === 'function') actualizarUI();
+                    if (typeof ComandosModule !== 'undefined' && typeof ComandosModule.configure === 'function' && typeof configurarComandos === 'function') configurarComandos();
+                    console.log('✅ Sistema completamente inicializado');
+                    var terminal = document.getElementById('terminalOutput');
+                    if (terminal) {
+                        var line = document.createElement('div');
+                        line.className = 'terminal-line';
+                        line.innerHTML = '<span class="prompt">▶</span><span class="text" style="color: #38ef7d;">✅ Sistema listo - v5.3.34</span>';
+                        terminal.appendChild(line);
+                        terminal.scrollTop = terminal.scrollHeight;
+                    }
+                    
+                    // Configurar botón de tallar
+                    var btnTallar = document.getElementById('paletteTallar');
+                    if (btnTallar) {
+                        btnTallar.removeAttribute('onclick');
+                        if (typeof window.activarModoTallar === 'function') {
+                            btnTallar.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); console.log('🪚 Click en botón de tallar'); window.activarModoTallar(); });
+                            console.log('🪚 Botón de tallar configurado');
+                        }
+                    }
+                    
+                    // Configurar botón de material (NUEVO)
+                    var btnMaterial = document.getElementById('paletteMaterial');
+                    if (btnMaterial) {
+                        btnMaterial.removeAttribute('onclick');
+                        if (typeof window.activarModoMaterial === 'function') {
+                            btnMaterial.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); console.log('🧱 Click en botón de material'); window.activarModoMaterial(); });
+                            console.log('🧱 Botón de material configurado');
+                        }
+                    }
+                    
+                    var btnPincel = document.getElementById('paintBrushBtn');
+                    var btnCubeta = document.getElementById('paintBucketBtn');
+                    if (btnPincel && typeof window.activarPincel === 'function') {
+                        btnPincel.removeAttribute('onclick');
+                        btnPincel.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); window.activarPincel(); });
+                        console.log('🖌️ Botón de pincel configurado');
+                    }
+                    if (btnCubeta && typeof window.activarCubeta === 'function') {
+                        btnCubeta.removeAttribute('onclick');
+                        btnCubeta.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); window.activarCubeta(); });
+                        console.log('🪣 Botón de cubeta configurado');
+                    }
+                    configurarControlesIluminacionPaleta();
+                } catch (error) {
+                    console.error('❌ Error en inicialización:', error);
+                    setTimeout(inicializarSistema, 1000);
+                }
+            }
+            function configurarControlesIluminacionPaleta() {
+                var intensidadInput = document.getElementById('fondoIntensidadInput');
+                var intensidadValue = document.getElementById('fondoIntensidadValue');
+                if (intensidadInput && intensidadValue) {
+                    intensidadInput.addEventListener('input', function() {
+                        var val = parseInt(this.value);
+                        intensidadValue.textContent = val + '%';
+                        if (typeof window.actualizarIntensidadFondo === 'function') window.actualizarIntensidadFondo(val / 100);
+                    });
+                }
+                var colorPicker = document.getElementById('fondoColorPicker');
+                var colorPreview = document.getElementById('fondoColorPreview');
+                if (colorPicker && colorPreview) {
+                    colorPicker.addEventListener('input', function() {
+                        colorPreview.style.backgroundColor = this.value;
+                        if (typeof window.actualizarColorFondo === 'function') window.actualizarColorFondo(this.value);
+                        document.querySelectorAll('.lighting-btn').forEach(function(b) { b.classList.remove('active'); });
+                    });
+                }
+                var btnClaro = document.getElementById('btnFondoClaro');
+                var btnOscuro = document.getElementById('btnFondoOscuro');
+                var btnAuto = document.getElementById('btnFondoAuto');
+                if (btnClaro) {
+                    btnClaro.addEventListener('click', function() {
+                        document.querySelectorAll('.lighting-btn').forEach(function(b) { b.classList.remove('active'); });
+                        this.classList.add('active');
+                        if (typeof window.setFondoModo === 'function') window.setFondoModo('claro');
+                        var picker = document.getElementById('fondoColorPicker');
+                        var preview = document.getElementById('fondoColorPreview');
+                        if (picker) picker.value = '#ffffff';
+                        if (preview) preview.style.backgroundColor = '#ffffff';
+                    });
+                }
+                if (btnOscuro) {
+                    btnOscuro.addEventListener('click', function() {
+                        document.querySelectorAll('.lighting-btn').forEach(function(b) { b.classList.remove('active'); });
+                        this.classList.add('active');
+                        if (typeof window.setFondoModo === 'function') window.setFondoModo('oscuro');
+                        var picker = document.getElementById('fondoColorPicker');
+                        var preview = document.getElementById('fondoColorPreview');
+                        if (picker) picker.value = '#0a0a1a';
+                        if (preview) preview.style.backgroundColor = '#0a0a1a';
+                    });
+                }
+                if (btnAuto) {
+                    btnAuto.addEventListener('click', function() {
+                        document.querySelectorAll('.lighting-btn').forEach(function(b) { b.classList.remove('active'); });
+                        this.classList.add('active');
+                        if (typeof window.setFondoModo === 'function') window.setFondoModo('auto');
+                    });
+                }
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function() { setTimeout(inicializarSistema, 500); });
+            else setTimeout(inicializarSistema, 500);
+            window.addEventListener('load', function() { setTimeout(inicializarSistema, 200); });
+        })();
+    </script>
+</body>
+</html>
